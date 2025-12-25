@@ -1,10 +1,9 @@
 import unittest
 
-from htmlnode import ParentNode, LeafNode
-from markdown_parser import extract_markdown_images, extract_markdown_links, split_nodes_delimiter, split_nodes_image, split_nodes_links, text_to_textnodes
+from markdown_inline_parser import extract_markdown_images, extract_markdown_links, split_nodes_delimiter, split_nodes_image, split_nodes_links, text_to_textnodes
 from textnode import TextNode, TextType
 
-class TestMarkdownParser(unittest.TestCase):
+class TestMarkdownInlineParser(unittest.TestCase):
     def test_single_node_delimiter(self):
         node = TextNode("This is text with a `code block` word", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "`", TextType.CODE_TEXT)
