@@ -13,64 +13,56 @@ def markdown_to_html_node(markdown):
   for block in blocks:
     block_type = block_to_block_type(block)
 
-    if block_type == BlockType.PARAGRAPH:
-      block = block.replace('\n', ' ')
-      text_nodes = text_to_textnodes(block)
-      html_nodes = text_nodes_to_html_nodes(text_nodes)
-      children_nodes.append(ParentNode('p', html_nodes))
-      continue
+    nodes = []
+    match block_type:
+      case BlockType.CODE:
+        lines = block.split('\n')
 
-    if block_type == BlockType.HEADING:
-      match = re.match(r"^(#{1,6}) (.*)", block)
+        code_node = TextNode(f'{"\n".join(lines[1:-1])}\n', TextType.CODE_TEXT)
 
-      if match is None:
-        raise Exception("Heading has incorrect syntax")
+        children_nodes.append(ParentNode('pre', [text_node_to_html_node(code_node)]))
+        continue
+      case BlockType.HEADING:
+        match = re.match(r"^(#{1,6}) (.*)", block)
 
-      heading_number = len(match.group(1)) # so the space after the # is not included
-      children_nodes.append(LeafNode(f'h{heading_number}', match.group(2)))
-      continue
+        if match is None:
+          raise Exception("Heading has incorrect syntax")
 
-    if block_type == BlockType.CODE:
-      lines = block.split('\n')
+        nodes = text_to_children_nodes(match.group(2))
+        tag = f'h{len(match.group(1))}'
+      case BlockType.PARAGRAPH:
+        nodes = text_to_children_nodes(block.replace('\n', ' '))
+        tag = 'p'
+      case BlockType.QUOTE:
+        lines = block.split('\n')
 
-      code_node = TextNode(f'{"\n".join(lines[1:-1])}\n', TextType.CODE_TEXT)
-      children_nodes.append(ParentNode('pre', [text_node_to_html_node(code_node)]))
-      continue
+        quote = lines[0][2:]
+        for i in range(1, len(lines)):
+          quote += lines[i][1:]
 
-    if block_type == BlockType.QUOTE:
-      lines = block.split('\n')
+        nodes = text_to_children_nodes(quote)
+        tag = 'blockquote'
+      case BlockType.UNORDERED_LIST:
+        lines = block.split('\n')
 
-      quote = lines[0][2:]
-      for i in range(1, len(lines)):
-        quote += lines[i][1:]
-      
-      text_nodes = text_to_textnodes(quote)
-      children_nodes.append(ParentNode('blockquote', text_nodes_to_html_nodes(text_nodes)))
+        for line in lines:
+          nodes.append(ParentNode('li', text_to_children_nodes(line[2:])))
+        tag = 'ul'
+      case BlockType.ORDERED_LIST:
+        lines = block.split('\n')
 
-      continue
+        for line in lines:
+          nodes.append(ParentNode('li', text_to_children_nodes(line.split(".")[1][1:])))
 
-    if block_type == BlockType.UNORDERED_LIST:
-      lines = block.split('\n')
+        tag = 'ol'
 
-      unordered_list = []
-      for line in lines:
-        text_nodes = text_to_textnodes(line[2:])
-        unordered_list.append(ParentNode('li', text_nodes_to_html_nodes(text_nodes)))
-
-      children_nodes.append(ParentNode('ul', unordered_list))
-      continue
-
-    if block_type == BlockType.ORDERED_LIST:
-      lines = block.split('\n')
-
-      ordered_list = []
-      for line in lines:
-        text_nodes = text_to_textnodes(line.split(".")[1][1:])
-        ordered_list.append(ParentNode('li', text_nodes_to_html_nodes(text_nodes)))
-
-      children_nodes.append(ParentNode('ol', ordered_list))
+    children_nodes.append(ParentNode(tag, nodes))
 
   return ParentNode('div', children_nodes)
+
+def text_to_children_nodes(text):
+  text_nodes = text_to_textnodes(text)
+  return text_nodes_to_html_nodes(text_nodes)
 
 def text_nodes_to_html_nodes(text_nodes):
   html_nodes = []
