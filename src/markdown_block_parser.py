@@ -32,15 +32,15 @@ def is_heading(block):
   return re.search(r"^#{1,6} ", block) is not None
 
 def is_code_block(block):
-  split_block = block.split('```')
-
-  return len(split_block) == 3 and split_block[0] == '' and split_block[2] == ''
+  lines = block.split('\n')
+  
+  return len(lines) > 1 and lines[0].startswith("```") and lines[-1].startswith("```")
 
 def is_quote_block(block):
   lines = block.split('\n')
 
   for line in lines:
-    if line[0] != '>':
+    if not line.startswith('>'):
       return False
 
   return True
@@ -49,7 +49,7 @@ def is_unordered_list(block):
   lines = block.split('\n')
 
   for line in lines:
-    if line[:2] != '- ':
+    if not line.startswith('- '):
       return False
 
   return True
@@ -69,3 +69,4 @@ def is_ordered_list(block):
     
 
   return True
+

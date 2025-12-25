@@ -56,11 +56,13 @@ This is the same paragraph on a new line
     def test_is_heading_number_of_pound(self):
       self.assertEqual(False, is_heading('####### Heading 7'))
 
-    def test_is_code_block(self):
-      self.assertEqual(True, is_code_block('``` This is a code block ```'))
-    
     def test_is_code_block_empty(self):
-      self.assertEqual(True, is_code_block('``````'))
+      self.assertEqual(True, is_code_block('```\n```'))
+    
+    def test_is_code_block_multiline(self):
+      code_block="``` var x = 10;\nconsole.log(x);\nconsole.log(x == 10);\n```"
+
+      self.assertEqual(True, is_code_block(code_block))
 
     def test_is_code_block_syntax_fail(self):
       self.assertEqual(False, is_code_block('``` This is a code block ``'))
@@ -99,7 +101,7 @@ This is the same paragraph on a new line
       self.assertEqual(BlockType.HEADING, block_to_block_type('###### Heading 6'))
 
     def test_block_to_block_type_code(self):
-      self.assertEqual(BlockType.CODE, block_to_block_type('```console.log(\'hello world\')```'))
+      self.assertEqual(BlockType.CODE, block_to_block_type('```\n   console.log("hello world");\n```'))
 
     def test_block_to_block_type_quote(self):
       self.assertEqual(BlockType.QUOTE, block_to_block_type("> quote 1\n> quote2"))
