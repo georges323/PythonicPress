@@ -9,6 +9,14 @@ class BlockType(Enum):
   UNORDERED_LIST = 'unordered_list'
   ORDERED_LIST = 'ordered_list'
 
+def extract_title(markdown):
+    blocks = markdown.split("\n\n")
+
+    if len(blocks) < 2 and not blocks[0].startswith('# '):
+        raise ValueError('There needs to be an `h1` header at the start of the page!')
+
+    return blocks[0].split('# ')[1]
+
 def markdown_to_blocks(markdown):
   blocks= markdown.split("\n\n")
 
